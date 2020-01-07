@@ -1,3 +1,4 @@
+import 'package:flutter_weather/bloc/refresh_weather.dart';
 import 'package:flutter_weather/bloc/weather_event.dart';
 import 'package:flutter_weather/bloc/weather_state.dart';
 import 'package:flutter_weather/models/weather_model.dart';
@@ -26,6 +27,15 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
         yield WeatherLoaded(weather: weather);
       } catch (_) {
         yield WeatherError();
+      }
+    }
+
+    if (event is RefreshWeather) {
+      try {
+        final Weather weather = await weatherRepository.getWeather(event.city);
+        yield WeatherLoaded(weather: weather);
+      } catch (_) {
+        yield currentState;
       }
     }
   }
