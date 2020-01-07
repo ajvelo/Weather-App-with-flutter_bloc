@@ -1,21 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/bloc/simple_bloc_delegate.dart';
-import 'package:flutter_weather/data_provider/weather_api_client.dart';
-import 'package:flutter_weather/repository/weather_repository.dart';
-import 'package:flutter_weather/widgets/weather.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:flutter_weather/widgets/widgets.dart';
+import 'package:flutter_weather/repositories/repositories.dart';
+import 'package:flutter_weather/blocs/blocs.dart';
+
+class SimpleBlocDelegate extends BlocDelegate {
+  @override
+  void onEvent(Bloc bloc, Object event) {
+    super.onEvent(bloc, event);
+    print(event);
+  }
+
+  @override
+  onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    print(transition);
+  }
+
+  @override
+  void onError(Bloc bloc, Object error, StackTrace stacktrace) {
+    super.onError(bloc, error, stacktrace);
+    print(error);
+  }
+}
 
 void main() {
-  BlocSupervisor.delegate = SimpleBlocDelegate();
-
   final WeatherRepository weatherRepository = WeatherRepository(
     weatherApiClient: WeatherApiClient(
       httpClient: http.Client(),
     ),
   );
-
-  runApp(App(weatherRepository: weatherRepository));
+  BlocSupervisor.delegate = SimpleBlocDelegate();
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<ThemeBloc>(
+          create: (context) => ThemeBloc(),
+        ),
+        BlocProvider<SettingsBloc>(
+          create: (context) => SettingsBloc(),
+        ),
+      ],
+      child: App(weatherRepository: weatherRepository),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
@@ -27,10 +59,18 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Flutter Weather',
-        home: Weather(
-          weatherRepository: weatherRepository,
-        ));
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, themeState) {
+        return MaterialApp(
+          title: 'Flutter Weather',
+          theme: themeState.theme,
+          home: BlocProvider(
+            create: (context) =>
+                WeatherBloc(weatherRepository: weatherRepository),
+            child: Weather(),
+          ),
+        );
+      },
+    );
   }
 }
