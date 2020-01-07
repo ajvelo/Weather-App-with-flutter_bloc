@@ -108,6 +108,8 @@ class _WeatherState extends State<Weather> {
                 'Something went wrong!',
                 style: TextStyle(color: Colors.red),
               );
+            } else {
+              return Text('');
             }
           },
         ),
