@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:bloc/bloc.dart';
 
 void main() {
-  BlocSupervisor().delegate = SimpleBlocDelegate();
+  BlocSupervisor.delegate = SimpleBlocDelegate();
 
   final WeatherRepository weatherRepository = WeatherRepository(
     weatherApiClient: WeatherApiClient(
